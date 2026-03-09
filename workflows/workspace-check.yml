@@ -1,0 +1,64 @@
+name: Workspace Build Check
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly on Monday
+  workflow_dispatch:
+
+jobs:
+  workspace-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout cli-wizard-core
+        uses: actions/checkout@v4
+        with:
+          repository: infrakit-io/cli-wizard-core
+          path: cli-wizard-core
+
+      - name: Checkout vmware-content-library-core
+        uses: actions/checkout@v4
+        with:
+          repository: infrakit-io/vmware-content-library-core
+          path: vmware-content-library-core
+
+      - name: Checkout vmware-vm-bootstrap
+        uses: actions/checkout@v4
+        with:
+          repository: infrakit-io/vmware-vm-bootstrap
+          path: vmware-vm-bootstrap
+
+      - name: Checkout talos-vmware-cluster-bootstrap
+        uses: actions/checkout@v4
+        with:
+          repository: infrakit-io/talos-vmware-cluster-bootstrap
+          path: talos-vmware-cluster-bootstrap
+
+      - name: Checkout talos-docker-bootstrap
+        uses: actions/checkout@v4
+        with:
+          repository: infrakit-io/talos-docker-bootstrap
+          path: talos-docker-bootstrap
+
+      - name: Checkout kubernetes-orchestrator
+        uses: actions/checkout@v4
+        with:
+          repository: infrakit-io/kubernetes-orchestrator
+          path: kubernetes-orchestrator
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: kubernetes-orchestrator/go.mod
+
+      - name: Create go workspace
+        run: |
+          go work init
+          go work use \
+            ./cli-wizard-core \
+            ./vmware-content-library-core \
+            ./vmware-vm-bootstrap \
+            ./talos-vmware-cluster-bootstrap \
+            ./talos-docker-bootstrap \
+            ./kubernetes-orchestrator
+
+      - name: Build all modules
+        run: go build ./...
